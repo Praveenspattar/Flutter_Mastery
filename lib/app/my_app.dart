@@ -1,7 +1,12 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
+import 'package:flutter_mastery/data/preferences.dart';
+import 'package:flutter_mastery/routes/routes.dart';
+import 'package:flutter_mastery/themes.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../data/app_state.dart';
+
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -22,9 +27,28 @@ class _MyAppState extends State<MyApp> with RestorationMixin {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp.router(
-      debugShowCheckedModeBanner: false,
-      restorationScopeId: "app",
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _appState.value),
+        ChangeNotifierProvider(create: (_) => Preferences()..load())
+      ],
+      child: CupertinoApp.router(
+        theme: MyTheme.themeData,
+        debugShowCheckedModeBanner: false,
+        restorationScopeId: "app",
+        routerConfig: GoRouter(
+          navigatorKey: rootNavigatorKey,
+          restorationScopeId: "router",
+          initialLocation: "/list",
+          redirect: (context, state) {
+            if (state.path == "/") {
+              return "/list";
+            }
+            return null;
+          },
+          routes: routes,
+        ),
+      ),
     );
   }
   
